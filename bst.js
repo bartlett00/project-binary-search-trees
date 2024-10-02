@@ -36,15 +36,6 @@ function merge(left, right) {
   return [...mergedArray, ...left, ...right];
 }
 
-/*
-    buildTree algo
-        find middle, middle becomes root
-        find middle of left, middle becomes root
-            middle becomes left child of root
-        find middle of right, middle becomes root
-            middle becomes right child of root
-
-*/
 function buildTree(array) {
   let sortedArr = mergeSort(array);
   let length = sortedArr.length;
@@ -53,11 +44,7 @@ function buildTree(array) {
     if (start > end) {
       return null;
     }
-    // console.log(array);
-    // console.log(start);
-    // console.log(end);
     let middle = Math.floor((start + end) / 2);
-    // console.log(middle);
     let node = TreeNode(array[middle]);
     node.left = buildSortedTree(array, start, middle - 1);
     node.right = buildSortedTree(array, middle + 1, end);
@@ -82,7 +69,6 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
 };
 
 function insert(node, insertData) {
-  //insertions are always "leaves"
   if (insertData === node.data) {
     return;
   }
@@ -116,8 +102,6 @@ function findReplacement(node) {
 }
 
 function deleteItem(node, deleteData) {
-  // delete implementation heavily sourced from https://www.geeksforgeeks.org/deletion-in-binary-search-tree/
-
   if (node === null) {
     return node;
   }
@@ -144,26 +128,6 @@ function deleteItem(node, deleteData) {
     }
   }
   return node;
-
-  /*
-    two cases
-      leaf
-      node
-        with one child
-          child replaces parent in tree
-          in other words
-            parent of removed element points 
-            to removed elements child
-
-        with both children
-          find node that is next biggest
-            look in its right subtree
-            item in the furthest left of its right subtree
-              keep going left until end of branch
-              recursively remove smallest item in right subtree
-              take key at that node and replace original key
-          
-  */
 }
 
 function find(node, value) {
@@ -180,17 +144,6 @@ function find(node, value) {
     return node;
   }
 }
-
-/*
-  levelOrder psuedo code
-
-  base case: node = null
-
-  queue node
-  queue left child
-  queue right child
-
-*/
 
 function levelOrder(node, callback) {
   if (!callback) {
@@ -212,16 +165,6 @@ function levelOrder(node, callback) {
     }
   }
 }
-
-/*
-    queue node
-    queue left child
-    queue right child
-    until bottom of tree is reached
-
-    base case =>
-      if node is null, return null
-  */
 
 function inOrder(node, callback) {
   if (!callback) {
@@ -247,7 +190,6 @@ function preOrder(node, callback) {
     callback(node);
     preOrder(node.left, callback);
     preOrder(node.right, callback);
-    return;
   }
 }
 
@@ -264,8 +206,113 @@ function postOrder(node, callback) {
   }
 }
 
-const exampleArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
-let tree = buildTree(exampleArr);
-const testArr = [1, 6, 3, 2, 7, 4, 5];
-let testTree = buildTree(testArr);
-prettyPrint(testTree);
+function depth(root, node) {
+  let queue = [];
+  let depth = 0;
+  if (root === null) {
+    return null;
+  }
+  if (node === null) {
+    return null;
+  }
+
+  queue.push(root);
+  while (queue.length !== 0) {
+    let front = queue.shift();
+    if (front === node) {
+      return depth;
+    }
+    if (node.data > front.data && front.right !== null) {
+      depth++;
+      queue.push(front.right);
+    }
+    if (node.data < front.data && front.left !== null) {
+      depth++;
+      queue.push(front.left);
+    }
+  }
+  return depth;
+}
+
+function height(node) {
+  if (node === null) {
+    return -1;
+  }
+  let left = height(node.left);
+  let right = height(node.right);
+  if (left > right) {
+    return left + 1;
+  } else {
+    return right + 1;
+  }
+}
+
+function isBalanced(tree) {
+  if (tree === null) {
+    return null;
+  }
+  let leftHeight = height(tree.left);
+  let rightHeight = height(tree.right);
+  return Math.abs(leftHeight - rightHeight) <= 1 ? true : false;
+}
+
+function rebalance(tree) {
+  let unbalanced = [];
+  inOrder(tree, (node) => {
+    unbalanced.push(node.data);
+  });
+  return buildTree(unbalanced);
+}
+
+function randomNumArr() {
+  let random = Math.floor(Math.random() * 100);
+  let randomArr = [];
+  for (let i = 0; i < random; i++) {
+    randomArr.push(Math.floor(Math.random() * 100));
+  }
+  return randomArr;
+}
+
+function bst() {
+  let random = randomNumArr();
+  let randomTree = buildTree(random);
+  if (!isBalanced(randomTree)) {
+    randomTree = rebalance(randomTree);
+  }
+  prettyPrint(randomTree);
+  function printOrders() {
+    let levelOrderArr = [];
+    let preOrderArr = [];
+    let postOrderArr = [];
+    let inOrderArr = [];
+
+    levelOrder(randomTree, (node) => {
+      levelOrderArr.push(node.data);
+    });
+    preOrder(randomTree, (node) => {
+      preOrderArr.push(node.data);
+    });
+    postOrder(randomTree, (node) => {
+      postOrderArr.push(node.data);
+    });
+    inOrder(randomTree, (node) => {
+      inOrderArr.push(node.data);
+    });
+    console.log(levelOrderArr);
+    console.log(preOrderArr);
+    console.log(postOrderArr);
+    console.log(inOrderArr);
+  }
+  printOrders();
+
+  for (let i = 0; i < 10; i++) {
+    insert(randomTree, Math.floor(Math.random() * 200) + 100);
+  }
+  console.log(isBalanced(randomTree));
+  randomTree = rebalance(randomTree);
+  console.log(isBalanced(randomTree));
+  prettyPrint(randomTree);
+  printOrders();
+}
+
+bst();
